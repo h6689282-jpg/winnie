@@ -1,0 +1,29 @@
+"""
+Authentication backend that looks up users by email.
+
+Used so that JWT login with email + password works when the frontend
+sends { "email": "...", "password": "..." }.
+"""
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
+
+
+User = get_user_model()
+
+
+class EmailBackend(ModelBackend):
+    """Authenticate using email and password."""
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        email = kwargs.get("email") or username
+        if email is None or password is None:
+            return None
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            User().set_password(password)  # reduce timing leak
+            return None
+        if user.check_password(password) and self.user_can_authenticate(user):
+            return user
+        return None
