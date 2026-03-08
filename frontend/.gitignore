@@ -1,0 +1,7 @@
+# 勿提交含真實 API 位址的 .env
+.env
+.env.local
+.env.*.local
+
+node_modules/
+dist/
